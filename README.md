@@ -4,6 +4,8 @@ A reusable AWS portfolio template built with a static HTML/CSS/JavaScript fronte
 
 ## Architecture
 
+![Secure static website architecture](assets/architecture/aws-static-website.png)
+
 - Route 53 hosts the public DNS zone.
 - ACM provides the CloudFront TLS certificate.
 - CloudFront redirects HTTP to HTTPS and serves cached content.
