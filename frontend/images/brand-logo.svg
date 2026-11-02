@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="160" viewBox="0 0 640 160" role="img" aria-labelledby="title desc">
+  <title id="title">Brand logo placeholder</title>
+  <desc id="desc">Replace this file with your own logo.</desc>
+  <rect width="640" height="160" rx="16" fill="#111820"/>
+  <rect x="16" y="16" width="128" height="128" rx="12" fill="#f47c3c"/>
+  <path d="M48 80h64M80 48v64" stroke="#111820" stroke-width="12" stroke-linecap="round"/>
+  <text x="172" y="94" fill="#f7f3ed" font-family="Arial, sans-serif" font-size="36">&lt;insert_parameter&gt;</text>
+</svg>

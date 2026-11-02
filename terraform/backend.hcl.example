@@ -1,0 +1,3 @@
+bucket = "<insert_parameter>"
+key    = "<insert_parameter>"
+region = "<insert_parameter>"

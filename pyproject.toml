@@ -1,0 +1,22 @@
+[project]
+name = "secure-static-website-template"
+version = "0.1.0"
+description = "A reusable secure static website template for AWS"
+readme = "README.md"
+authors = [
+    { name = "<insert_parameter>", email = "<insert_parameter>" }
+]
+requires-python = ">=3.9"
+dependencies = [
+    "diagrams>=0.24.4",
+]
+
+[project.scripts]
+secure-static-website = "secure_static_website:main"
+
+[build-system]
+requires = ["uv_build>=0.12.3,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "secure_static_website"

@@ -1,0 +1,29 @@
+.env
+.venv
+**/__pycache__/
+trust-policy.json
+backend.hcl
+
+# Terraform 
+# Terraform
+# Core infrastructure files to ignore
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Crash logs and CLI configurations
+crash.log
+crash.*.log
+.terraformrc
+terraform.rc
+
+# Exclude sensitive variables
+*.tfvars
+*.tfvars.json
+
+# Exclude experimental or local override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+trust-policy.json

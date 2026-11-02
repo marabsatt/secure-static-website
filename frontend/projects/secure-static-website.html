@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A case study for a secure static website architecture using Route 53, ACM, CloudFront, private Amazon S3, Terraform, and GitHub Actions.">
+    <title>Secure Static Website Delivery | &lt;insert_parameter&gt;</title>
+    <link rel="icon" href="../images/brand-mark.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header class="site-header" data-header>
+        <a class="brand" href="../index.html" aria-label="&lt;insert_parameter&gt; home"><img src="../images/brand-logo.svg" alt="&lt;insert_parameter&gt;"></a>
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="Open navigation"><span></span><span></span></button>
+        <nav class="main-nav" id="main-nav" aria-label="Primary navigation"><a href="../index.html" aria-current="page">Work</a><a href="../about.html">About</a><a href="../contact.html">Contact</a></nav>
+    </header>
+
+    <main id="main-content">
+        <section class="case-study-hero section-grid">
+            <p class="eyebrow reveal">Case study / 01</p>
+            <div class="case-study-heading reveal">
+                <a class="back-link" href="../index.html#selected-work"><span aria-hidden="true">←</span> All work</a>
+                <h1>Secure static website delivery.</h1>
+                <p class="case-study-lede">A globally delivered portfolio with a private origin, managed TLS, repeatable infrastructure, and an automated deployment path.</p>
+                <ul class="case-study-meta" aria-label="Project details">
+                    <li><strong>Role</strong>Solutions architecture</li>
+                    <li><strong>Platform</strong>Amazon Web Services</li>
+                    <li><strong>Delivery</strong>Terraform + GitHub Actions</li>
+                </ul>
+            </div>
+            <div class="case-study-marker reveal" aria-hidden="true">01 / 03</div>
+        </section>
+
+        <section class="architecture-section section-grid" aria-labelledby="request-path-title">
+            <figure class="architecture-panel architecture-image-panel reveal">
+                <img src="../images/aws-website-architecture-flow.svg" alt="&lt;insert_parameter&gt; website architecture showing website visitors routed through Route 53 and ACM to Amazon CloudFront and private Amazon S3, with GitHub Actions CI/CD and Terraform infrastructure as code." width="1600" height="900" decoding="async">
+                <figcaption id="request-path-title">Delivery architecture</figcaption>
+            </figure>
+        </section>
+
+        <section class="article-section section-grid">
+            <aside class="article-rail" aria-label="Article sections">
+                <p class="eyebrow">On this page</p>
+                <ol>
+                    <li><a href="#challenge"><span>01</span> The challenge</a></li>
+                    <li><a href="#architecture"><span>02</span> Architecture</a></li>
+                    <li><a href="#decisions"><span>03</span> Design decisions</a></li>
+                    <li><a href="#security"><span>04</span> Security</a></li>
+                    <li><a href="#delivery"><span>05</span> Delivery</a></li>
+                    <li><a href="#outcome"><span>06</span> Outcome</a></li>
+                </ol>
+            </aside>
+
+            <article class="article-body">
+                <section id="challenge" class="reveal">
+                    <p class="eyebrow">01 / The challenge</p>
+                    <h2>How I Built This.</h2>
+                    <p class="article-intro">&lt;insert_parameter&gt;</p>
+                    <div class="article-callout"><p>&lt;insert_parameter&gt;</p></div>
+                    <p>&lt;insert_parameter&gt;</p>
+                    <p>Describe why you chose to build your own static website and the requirements that shaped it.</p>
+                    <p>The reference solution targets a secure, fast, cost-conscious site that is straightforward to operate and avoids maintaining an unnecessary application server.</p>
+                    <p>Infrastructure and deployment changes remain reproducible and reviewable through Terraform and GitHub Actions.</p>
+                </section>
+
+                <section id="architecture" class="reveal">
+                    <p class="eyebrow">02 / Architecture</p>
+                    <h2>One controlled path from domain to object.</h2>
+                    <p>The website serves static content, so I chose managed storage and edge delivery rather than running a web server. Route 53 publishes alias records for the apex and <code>www</code> names. ACM validates the domain and supplies the TLS certificate used by CloudFront; it is not a separate request-processing hop.</p>
+                    <p>CloudFront redirects HTTP traffic to HTTPS, compresses responses, and caches static objects close to visitors. Its origin is the S3 regional endpoint: origin access control signs CloudFront requests so the bucket can remain private while the site is publicly accessible through the distribution.</p>
+                    <div class="decision-grid">
+                        <article><span>01</span><h3>Resolve the domain</h3><p>Route 53 aliases direct IPv4 and IPv6 visitors to the CloudFront distribution.</p></article>
+                        <article><span>02</span><h3>Protect the connection</h3><p>An ACM certificate in the required CloudFront certificate region enables HTTPS for the public domain.</p></article>
+                        <article><span>03</span><h3>Deliver at the edge</h3><p>CloudFront manages caching, compression, and content delivery for the static frontend.</p></article>
+                        <article><span>04</span><h3>Keep the origin private</h3><p>S3 stores site assets; CloudFront origin access control governs how they are retrieved.</p></article>
+                    </div>
+                </section>
+
+                <section id="decisions" class="reveal">
+                    <p class="eyebrow">03 / Architecture decisions</p>
+                    <h2>Choose only what the problem needs.</h2>
+                    <p class="article-intro">The goal was not to use the most AWS services. It was to meet the site's requirements with a small, understandable architecture.</p>
+                    <div class="decision-grid">
+                        <article><span>01 / Hosting</span><h3>Static over server-based</h3><p>A static site avoids application-server maintenance. The tradeoff is that future dynamic functionality would require additional services.</p></article>
+                        <article><span>02 / Access</span><h3>Private S3 through CloudFront</h3><p>Origin access control avoids exposing a public S3 website origin. It adds CDN and cache configuration that must be maintained.</p></article>
+                        <article><span>03 / Infrastructure</span><h3>Terraform over manual setup</h3><p>Infrastructure as code makes changes repeatable and reviewable. It also requires disciplined state management and infrastructure code maintenance.</p></article>
+                        <article><span>04 / Releases</span><h3>Automated over manual deployment</h3><p>GitHub Actions provides a consistent delivery path. Workflow permissions and approvals become part of the system's operational responsibilities.</p></article>
+                    </div>
+                </section>
+
+                <section id="security" class="reveal">
+                    <p class="eyebrow">04 / Security</p>
+                    <h2>Access is narrow by design.</h2>
+                    <p>Amazon S3 Block Public Access is enabled for the website bucket. Its bucket policy grants object reads to the CloudFront service principal and conditions that permission on the specific distribution ARN. Visitors therefore request content from CloudFront rather than from S3.</p>
+                    <p>The viewer protocol policy redirects HTTP to HTTPS. DNS validation lets ACM manage certificate renewal, while the domain records remain declared alongside the rest of the infrastructure.</p>
+                    <div class="article-callout"><p>The public surface is the CDN and its custom domain. The storage layer stays behind that boundary.</p></div>
+                </section>
+
+                <section id="delivery" class="reveal">
+                    <p class="eyebrow">05 / Delivery</p>
+                    <h2>Changes follow a reviewable path.</h2>
+                    <p>Terraform holds the infrastructure definition and uses an S3 backend for remote state. Pull requests run the planning workflow, giving reviewers a concrete view of proposed infrastructure changes before an apply.</p>
+                    <p>The apply workflow uses GitHub Actions with AWS role credentials instead of keeping long-lived access keys in the repository. The frontend remains a set of static files, so deployment stays small and predictable.</p>
+                    <h3>Delivery sequence</h3>
+                    <ol>
+                        <li>Update the frontend or Terraform configuration in version control.</li>
+                        <li>Review the Terraform plan produced for the proposed change.</li>
+                        <li>Apply approved infrastructure changes through the protected workflow.</li>
+                        <li>Publish the static assets and let CloudFront serve the current version.</li>
+                    </ol>
+                </section>
+
+                <section id="outcome" class="reveal">
+                    <p class="eyebrow">06 / Outcome</p>
+                    <h2>More than a website. A foundation for what's next.</h2>
+                    <p>&lt;insert_parameter&gt;</p>
+                    <p>Describe how the platform can evolve with new case studies or technical writing, and record the primary architecture lesson from the project.</p>
+                    <p>&lt;insert_parameter&gt;</p>
+                </section>
+            </article>
+        </section>
+
+        <nav class="case-study-nav case-study-nav-single section-grid" aria-label="Case study navigation">
+            <a href="../index.html#selected-work"><span>Back</span><strong>All selected work</strong></a>
+        </nav>
+    </main>
+
+    <footer class="site-footer section-grid">
+        <img src="../images/brand-mark.svg" alt="" aria-hidden="true">
+        <p>&lt;insert_parameter&gt;<br>AWS Solutions Architecture</p>
+        <nav class="social-links" aria-label="Social media">
+            <a href="&lt;insert_parameter&gt;" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 1 1 0-4.124 2.062 2.062 0 0 1 0 4.124zM6.813 20.452H3.861V9h2.952v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0z"/></svg></a>
+            <a href="&lt;insert_parameter&gt;" target="_blank" rel="noopener noreferrer" aria-label="GitHub profile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .297a12 12 0 0 0-3.797 23.385c.6.113.82-.258.82-.577l-.015-2.04c-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.335-1.757-1.335-1.757-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23a11.5 11.5 0 0 1 3-.405c1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22l-.015 3.286c0 .315.21.69.825.57A12.002 12.002 0 0 0 12 .297z"/></svg></a>
+        </nav>
+        <p class="footer-meta">Built with care. Deployed on AWS.<br>© <span data-year></span> &lt;insert_parameter&gt;</p>
+    </footer>
+    <script src="../script.js" defer></script>
+</body>
+</html>

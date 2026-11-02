@@ -1,0 +1,4 @@
+aws_region     = "<insert_parameter>"
+domain_name    = "<insert_parameter>"
+subdomain_name = "<insert_parameter>"
+bucket_name    = "<insert_parameter>"

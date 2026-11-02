@@ -1,0 +1,129 @@
+name: Terraform Plan
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: terraform-plan-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  TF_IN_AUTOMATION: "true"
+  TF_VAR_aws_region: ${{ vars.AWS_REGION }}
+  TF_VAR_domain_name: ${{ vars.DOMAIN_NAME }}
+  TF_VAR_subdomain_name: ${{ vars.SUBDOMAIN_NAME }}
+  TF_VAR_bucket_name: ${{ vars.WEBSITE_BUCKET_PREFIX }}
+
+jobs:
+  plan:
+    name: Validate and Plan
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: github-actions-terraform-plan
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.8"
+          terraform_wrapper: false
+
+      - name: Check Terraform formatting
+        id: fmt
+        continue-on-error: true
+        working-directory: terraform
+        run: terraform fmt -check -diff
+
+      - name: Initialize Terraform
+        id: init
+        continue-on-error: true
+        working-directory: terraform
+        run: >-
+          terraform init -input=false
+          -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}"
+          -backend-config="key=${{ vars.TF_STATE_KEY }}"
+          -backend-config="region=${{ vars.AWS_REGION }}"
+
+      - name: Validate Terraform
+        id: validate
+        if: steps.init.outcome == 'success'
+        continue-on-error: true
+        working-directory: terraform
+        run: terraform validate -no-color
+
+      - name: Create Terraform plan
+        id: plan
+        if: steps.init.outcome == 'success' && steps.validate.outcome == 'success'
+        continue-on-error: true
+        working-directory: terraform
+        shell: bash
+        run: |
+          set +e
+          terraform plan -no-color -input=false -out=tfplan > plan.txt 2>&1
+          exit_code=$?
+          if [ "$exit_code" -eq 0 ]; then
+            terraform show -no-color tfplan > plan.txt
+          fi
+          exit "$exit_code"
+
+      - name: Post plan summary
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          FORMAT_RESULT: ${{ steps.fmt.outcome }}
+          INIT_RESULT: ${{ steps.init.outcome }}
+          VALIDATE_RESULT: ${{ steps.validate.outcome }}
+          PLAN_RESULT: ${{ steps.plan.outcome }}
+        with:
+          script: |
+            const fs = require("fs");
+            const planPath = "terraform/plan.txt";
+            const plan = fs.existsSync(planPath)
+              ? fs.readFileSync(planPath, "utf8").slice(0, 60000)
+              : "Terraform plan was not created because an earlier check failed.";
+            const body = [
+              `#### Terraform Format: \`${process.env.FORMAT_RESULT}\``,
+              `#### Terraform Init: \`${process.env.INIT_RESULT}\``,
+              `#### Terraform Validate: \`${process.env.VALIDATE_RESULT}\``,
+              `#### Terraform Plan: \`${process.env.PLAN_RESULT}\``,
+              "",
+              "<details><summary>Show plan result</summary>",
+              "",
+              "```hcl",
+              plan,
+              "```",
+              "",
+              "</details>",
+            ].join("\n");
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            });
+
+      - name: Check results
+        if: >-
+          always() &&
+          (steps.fmt.outcome == 'failure' ||
+           steps.init.outcome == 'failure' ||
+           steps.validate.outcome == 'failure' ||
+           steps.plan.outcome == 'failure')
+        run: exit 1
